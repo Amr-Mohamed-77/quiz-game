@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>سؤال وجواب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0E2E2B;
+    --bg-2: #123B36;
+    --panel: #163F3A;
+    --gold: #D4AF37;
+    --gold-soft: #E8C766;
+    --cream: #F3EEDF;
+    --easy: #4C9A6A;
+    --medium: #D08A2A;
+    --hard: #B44430;
+    --text-dim: #A9C4BD;
+    --radius: 18px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Tajawal', sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(212,175,55,0.08), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(212,175,55,0.06), transparent 45%),
+      var(--bg);
+    color: var(--cream);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    overflow-x:hidden;
+  }
+  #app{
+    width:100%;
+    max-width:480px;
+    position:relative;
+  }
+  .screen{ animation: fadeIn .35s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  @media (prefers-reduced-motion: reduce){
+    .screen{animation:none;}
+  }
+
+  /* corner motif */
+  .motif{
+    position:absolute;
+    width:46px; height:46px;
+    border: 2px solid var(--gold);
+    opacity:0.55;
+  }
+  .motif::before{
+    content:"";
+    position:absolute; inset:6px;
+    border:1px solid var(--gold);
+    transform:rotate(45deg);
+  }
+  .motif.tl{ top:-10px; right:-10px; border-width:0 2px 2px 0; border-radius: 0 0 0 24px;}
+  .motif.br{ bottom:-10px; left:-10px; border-width:2px 0 0 2px; border-radius: 24px 0 0 0;}
+
+  .card{
+    background: var(--panel);
+    border:1px solid rgba(212,175,55,0.25);
+    border-radius: var(--radius);
+    padding:28px 22px;
+    position:relative;
+    box-shadow: 0 20px 40px -20px rgba(0,0,0,0.6);
+  }
+
+  h1.title{
+    font-family:'Cairo', sans-serif;
+    font-weight:900;
+    font-size:2rem;
+    text-align:center;
+    letter-spacing:0.5px;
+    color: var(--gold-soft);
+    margin-bottom:4px;
+  }
+  .subtitle{
+    text-align:center;
+    color: var(--text-dim);
+    font-size:0.92rem;
+    margin-bottom:26px;
+  }
+  .rule{
+    height:1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity:0.5;
+    margin: 18px 0;
+  }
+
+  /* category grid */
+  .cat-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+  }
+  .cat-btn{
+    background: var(--bg-2);
+    border:1px solid rgba(212,175,55,0.2);
+    border-radius: 14px;
+    padding:20px 12px;
+    text-align:center;
+    cursor:pointer;
+    transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    color: var(--cream);
+    font-family:'Cairo', sans-serif;
+  }
+  .cat-btn:hover, .cat-btn:focus-visible{
+    transform: translateY(-3px);
+    border-color: var(--gold);
+    background: #1A4A44;
+    outline:none;
+  }
+  .cat-btn .icon{ font-size:1.9rem; display:block; margin-bottom:8px;}
+  .cat-btn .name{ font-weight:700; font-size:0.98rem;}
+
+  /* difficulty */
+  .diff-list{ display:flex; flex-direction:column; gap:12px; }
+  .diff-btn{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 18px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.08);
+    cursor:pointer;
+    font-family:'Cairo', sans-serif;
+    font-weight:700;
+    color:var(--cream);
+    background: var(--bg-2);
+    transition: transform .15s ease, filter .15s ease;
+  }
+  .diff-btn:hover, .diff-btn:focus-visible{ transform: translateY(-2px); filter:brightness(1.1); outline:none;}
+  .diff-btn .dot{ width:12px; height:12px; border-radius:50%; }
+  .diff-btn.easy .dot{ background:var(--easy);} 
+  .diff-btn.medium .dot{ background:var(--medium);} 
+  .diff-btn.hard .dot{ background:var(--hard);} 
+  .diff-btn .meta{ font-family:'Tajawal',sans-serif; font-weight:400; font-size:0.8rem; color:var(--text-dim);}
+
+  .back-link{
+    display:inline-flex; align-items:center; gap:6px;
+    color: var(--text-dim);
+    font-size:0.85rem;
+    cursor:pointer;
+    margin-bottom:18px;
+    background:none; border:none; font-family:'Tajawal',sans-serif;
+  }
+  .back-link:hover{ color: var(--gold-soft); }
+
+  /* quiz screen */
+  .quiz-top{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:14px;
+    font-family:'Cairo', sans-serif;
+    font-size:0.85rem;
+    color: var(--text-dim);
+  }
+  .score-pill{
+    background: rgba(212,175,55,0.12);
+    border:1px solid rgba(212,175,55,0.35);
+    color: var(--gold-soft);
+    padding:4px 12px;
+    border-radius:999px;
+    font-weight:700;
+  }
+  .progress-bar{
+    height:6px;
+    background: rgba(255,255,255,0.08);
+    border-radius:99px;
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  .progress-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-soft));
+    transition: width .3s ease;
+  }
+  .timer-bar{
+    height:4px;
+    background:rgba(255,255,255,0.08);
+    border-radius:99px;
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  .timer-fill{
+    height:100%;
+    background: var(--medium);
+    width:100%;
+    transition: width 1s linear;
+  }
+  .q-text{
+    font-family:'Cairo', sans-serif;
+    font-weight:700;
+    font-size:1.15rem;
+    line-height:1.7;
+    margin-bottom:22px;
+    min-height:60px;
+  }
+  .options{ display:flex; flex-direction:column; gap:11px; }
+  .opt-btn{
+    text-align:right;
+    padding:14px 16px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.1);
+    background: var(--bg-2);
+    color: var(--cream);
+    font-family:'Tajawal', sans-serif;
+    font-size:0.98rem;
+    cursor:pointer;
+    transition: all .15s ease;
+  }
+  .opt-btn:hover:not(:disabled){ border-color: var(--gold); background:#1A4A44; }
+  .opt-btn:focus-visible{ outline: 2px solid var(--gold); outline-offset:2px; }
+  .opt-btn:disabled{ cursor:default; }
+  .opt-btn.correct{ background: rgba(76,154,106,0.25); border-color: var(--easy); color:#CDEBD8; }
+  .opt-btn.wrong{ background: rgba(180,68,48,0.25); border-color: var(--hard); color:#F0CFC7; }
+
+  .next-hint{
+    text-align:center;
+    color: var(--text-dim);
+    font-size:0.8rem;
+    margin-top:16px;
+    min-height:18px;
+  }
+
+  /* result screen */
+  .result-emoji{ text-align:center; font-size:3rem; margin-bottom:6px; }
+  .result-score{
+    text-align:center;
+    font-family:'Cairo', sans-serif;
+    font-weight:900;
+    font-size:2.4rem;
+    color: var(--gold-soft);
+    margin-bottom:4px;
+  }
+  .result-label{
+    text-align:center;
+    color: var(--text-dim);
+    margin-bottom:6px;
+    font-size:0.95rem;
+  }
+  .result-best{
+    text-align:center;
+    color: var(--gold);
+    font-size:0.85rem;
+    margin-bottom:22px;
+  }
+  .btn-row{ display:flex; gap:10px; }
+  .btn{
+    flex:1;
+    padding:13px;
+    border-radius:12px;
+    border:none;
+    font-family:'Cairo', sans-serif;
+    font-weight:700;
+    cursor:pointer;
+    font-size:0.92rem;
+    transition: filter .15s ease, transform .15s ease;
+  }
+  .btn:hover{ filter:brightness(1.1); transform:translateY(-2px); }
+  .btn-primary{ background: linear-gradient(135deg, var(--gold), var(--gold-soft)); color:#12312C; }
+  .btn-secondary{ background: var(--bg-2); color: var(--cream); border:1px solid rgba(255,255,255,0.12); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ---------------- Question bank ---------------- */
+const QUESTIONS = {
+  general: {
+    easy: [
+      {q:"ما هو أكبر كوكب في المجموعة الشمسية؟", options:["الأرض","المشتري","المريخ","زحل"], a:1},
+      {q:"كم عدد أيام الأسبوع؟", options:["خمسة","ستة","سبعة","ثمانية"], a:2},
+      {q:"ما هو لون السماء في يوم صافٍ؟", options:["أخضر","أزرق","أصفر","بنفسجي"], a:1},
+      {q:"ما هي العملة الرسمية للمملكة العربية السعودية؟", options:["الدرهم","الريال","الدينار","الجنيه"], a:1},
+      {q:"كم عدد حروف اللغة العربية؟", options:["26","28","30","32"], a:1},
+      {q:"ما اسم أصغر عظمة في جسم الإنسان؟", options:["عظمة الفخذ","الركاب في الأذن","عظمة الترقوة","عظمة الجمجمة"], a:1},
+    ],
+    medium: [
+      {q:"من هو مخترع المصباح الكهربائي؟", options:["نيوتن","توماس إديسون","أينشتاين","جراهام بيل"], a:1},
+      {q:"ما هي أسرع حيوانات البر؟", options:["الأسد","الفهد","النمر","الحصان"], a:1},
+      {q:"كم يبلغ عدد عظام جسم الإنسان البالغ؟", options:["186","206","226","246"], a:1},
+      {q:"ما هي عاصمة أستراليا؟", options:["سيدني","ملبورن","كانبيرا","بيرث"], a:2},
+      {q:"ما هو الغاز الذي يشكل الجزء الأكبر من الغلاف الجوي للأرض؟", options:["الأكسجين","النيتروجين","ثاني أكسيد الكربون","الهيدروجين"], a:1},
+      {q:"من مؤلف رواية 'مئة عام من العزلة'؟", options:["نجيب محفوظ","غابرييل غارسيا ماركيز","خورخي بورخيس","إرنست همنغواي"], a:1},
+    ],
+    hard: [
+      {q:"ما هو العنصر الكيميائي الذي رمزه 'Au'؟", options:["الفضة","الألومنيوم","الذهب","الزئبق"], a:2},
+      {q:"في أي عام تأسست منظمة الأمم المتحدة؟", options:["1942","1945","1950","1939"], a:1},
+      {q:"ما اسم أطول نهر في العالم؟", options:["الأمازون","النيل","المسيسيبي","اليانغتسي"], a:1},
+      {q:"من هو العالم الذي وضع نظرية النسبية؟", options:["نيوتن","أينشتاين","غاليليو","بور"], a:1},
+      {q:"ما هي وحدة قياس شدة الصوت؟", options:["الهرتز","الديسيبل","الأمبير","الجول"], a:1},
+      {q:"كم عدد العظام في اليد الواحدة عند الإنسان؟", options:["21","27","32","19"], a:1},
+    ],
+  },
+  history: {
+    easy: [
+      {q:"من هو أول الخلفاء الراشدين؟", options:["عمر بن الخطاب","أبو بكر الصديق","عثمان بن عفان","علي بن أبي طالب"], a:1},
+      {q:"في أي قارة تقع مصر القديمة؟", options:["آسيا","أفريقيا","أوروبا","أمريكا"], a:1},
+      {q:"من بنى الأهرامات في مصر؟", options:["الرومان","الفراعنة","اليونانيون","الفرس"], a:1},
+      {q:"ما اسم الحرب العالمية التي وقعت بين 1939 و1945؟", options:["الحرب العالمية الأولى","الحرب العالمية الثانية","حرب الخليج","الحرب الباردة"], a:1},
+      {q:"من هو القائد الذي فتح الأندلس؟", options:["طارق بن زياد","خالد بن الوليد","صلاح الدين الأيوبي","عمرو بن العاص"], a:0},
+    ],
+    medium: [
+      {q:"في أي عام سقطت الدولة العباسية على يد المغول؟", options:["1258م","1099م","1453م","1517م"], a:0},
+      {q:"من هو مؤسس الدولة الأموية؟", options:["معاوية بن أبي سفيان","عبد الملك بن مروان","الوليد بن عبد الملك","يزيد بن معاوية"], a:0},
+      {q:"ما اسم المعركة التي هزم فيها صلاح الدين الأيوبي الصليبيين وحرر القدس؟", options:["معركة بدر","معركة حطين","معركة اليرموك","معركة عين جالوت"], a:1},
+      {q:"من هو أول رئيس لجمهورية مصر العربية؟", options:["جمال عبد الناصر","محمد نجيب","أنور السادات","حسني مبارك"], a:1},
+      {q:"في أي عام سقطت الدولة العثمانية؟", options:["1918م","1923م","1908م","1932م"], a:1},
+    ],
+    hard: [
+      {q:"من هو القائد المسلم الذي انتصر في معركة اليرموك؟", options:["سعد بن أبي وقاص","خالد بن الوليد","أبو عبيدة بن الجراح","عمرو بن العاص"], a:1},
+      {q:"ما اسم المعاهدة التي أنهت الحرب العالمية الأولى؟", options:["معاهدة فرساي","معاهدة لوزان","معاهدة سيفر","معاهدة يالطا"], a:0},
+      {q:"من هو خليفة المسلمين الذي جمع القرآن الكريم في مصحف واحد؟", options:["أبو بكر الصديق","عمر بن الخطاب","عثمان بن عفان","علي بن أبي طالب"], a:0},
+      {q:"في أي عام بدأت الحملة الفرنسية على مصر بقيادة نابليون؟", options:["1798م","1805م","1789م","1812م"], a:0},
+      {q:"ما اسم الاتفاقية السرية التي قسّمت بلاد الشام بين بريطانيا وفرنسا بعد الحرب العالمية الأولى؟", options:["اتفاقية سايكس بيكو","وعد بلفور","معاهدة لندن","اتفاقية كامب ديفيد"], a:0},
+    ],
+  },
+  geography: {
+    easy: [
+      {q:"ما هي عاصمة المملكة العربية السعودية؟", options:["جدة","الرياض","مكة","الدمام"], a:1},
+      {q:"ما هي أكبر قارة في العالم من حيث المساحة؟", options:["أفريقيا","آسيا","أوروبا","أمريكا الشمالية"], a:1},
+      {q:"ما هو أطول نهر في الوطن العربي؟", options:["دجلة","الفرات","النيل","الأردن"], a:2},
+      {q:"ما هي أكبر صحراء في العالم؟", options:["الصحراء الكبرى","صحراء الربع الخالي","صحراء جوبي","صحراء كالاهاري"], a:0},
+      {q:"في أي دولة يقع برج خليفة؟", options:["قطر","السعودية","الإمارات","الكويت"], a:2},
+    ],
+    medium: [
+      {q:"ما هي أصغر دولة في العالم من حيث المساحة؟", options:["موناكو","الفاتيكان","سان مارينو","ليختنشتاين"], a:1},
+      {q:"ما اسم المضيق الذي يفصل بين آسيا وأفريقيا؟", options:["مضيق هرمز","مضيق جبل طارق","مضيق باب المندب","مضيق البسفور"], a:2},
+      {q:"ما هي عاصمة اليابان؟", options:["بكين","سيول","طوكيو","بانكوك"], a:2},
+      {q:"أي دولة عربية تقع في قارتين؟", options:["مصر","السودان","الصومال","موريتانيا"], a:0},
+      {q:"ما هو أعلى جبل في الوطن العربي؟", options:["جبل توبقال","جبل النبي شعيب","جبل الشيخ","جبل سوداء حريملاء"], a:1},
+    ],
+    hard: [
+      {q:"ما هي الدولة التي تحدّ البحر الأحمر من الجهة الغربية بأكبر امتداد؟", options:["مصر","السودان","اليمن","إريتريا"], a:1},
+      {q:"ما اسم أعمق نقطة معروفة في محيطات العالم؟", options:["خندق ماريانا","خندق تونجا","خندق بورتوريكو","خندق كيرمادك"], a:0},
+      {q:"ما هي الدولة الوحيدة التي تقع على قارتين وتفصلها مضائق فقط؟", options:["روسيا","تركيا","مصر","كازاخستان"], a:1},
+      {q:"ما اسم أكبر بحيرة مغلقة في العالم؟", options:["بحيرة فيكتوريا","بحيرة قزوين","البحر الميت","بحيرة سوبيريور"], a:1},
+      {q:"أي دولة أفريقية لا تحدها أي دولة عربية ولكنها عضو في جامعة الدول العربية بسبب موقعها؟", options:["الصومال","جيبوتي","جزر القمر","كلاهما جيبوتي وجزر القمر"], a:3},
+    ],
+  },
+  religion: {
+    easy: [
+      {q:"كم عدد أركان الإسلام؟", options:["أربعة","خمسة","ستة","سبعة"], a:1},
+      {q:"في أي شهر فرض صيام رمضان؟", options:["شعبان","رمضان","شوال","ذو القعدة"], a:1},
+      {q:"ما هو أول بيت وضع للناس؟", options:["المسجد الأقصى","الكعبة المشرفة","المسجد النبوي","مسجد قباء"], a:1},
+      {q:"كم عدد الصلوات المفروضة في اليوم والليلة؟", options:["ثلاث","أربع","خمس","ست"], a:2},
+      {q:"من هو خاتم الأنبياء والمرسلين؟", options:["عيسى عليه السلام","موسى عليه السلام","محمد صلى الله عليه وسلم","إبراهيم عليه السلام"], a:2},
+    ],
+    medium: [
+      {q:"كم عدد سور القرآن الكريم؟", options:["100","104","114","120"], a:2},
+      {q:"ما هي أطول سورة في القرآن الكريم؟", options:["سورة آل عمران","سورة البقرة","سورة النساء","سورة المائدة"], a:1},
+      {q:"في أي غزوة استشهد سيدنا حمزة بن عبد المطلب؟", options:["غزوة بدر","غزوة أحد","غزوة الخندق","غزوة حنين"], a:1},
+      {q:"ما اسم أول من أسلم من الرجال؟", options:["عمر بن الخطاب","أبو بكر الصديق","علي بن أبي طالب","عثمان بن عفان"], a:1},
+      {q:"كم عدد أيام التشريق في الحج؟", options:["يومان","ثلاثة أيام","أربعة أيام","خمسة أيام"], a:1},
+    ],
+    hard: [
+      {q:"ما هي السورة التي لا تبدأ بالبسملة؟", options:["سورة التوبة","سورة الأنفال","سورة يونس","سورة هود"], a:0},
+      {q:"من هو الصحابي الملقب بـ 'أمين هذه الأمة'؟", options:["أبو عبيدة بن الجراح","سعد بن أبي وقاص","الزبير بن العوام","طلحة بن عبيد الله"], a:0},
+      {q:"كم عدد الأنبياء المذكورين في القرآن الكريم بالاسم؟", options:["20","23","25","28"], a:2},
+      {q:"ما اسم غزوة سميت بـ 'يوم الفرقان'؟", options:["غزوة أحد","غزوة بدر","غزوة الخندق","غزوة تبوك"], a:1},
+      {q:"من هو الصحابي الذي جُمع القرآن في عهده لأول مرة؟", options:["عمر بن الخطاب","أبو بكر الصديق","عثمان بن عفان","علي بن أبي طالب"], a:1},
+    ],
+  },
+  football: {
+    easy: [
+      {q:"كم عدد لاعبي الفريق الواحد في كرة القدم داخل الملعب؟", options:["9","10","11","12"], a:2},
+      {q:"في أي دولة أقيمت كأس العالم 2022؟", options:["روسيا","قطر","البرازيل","اليابان"], a:1},
+      {q:"كم دقيقة مدة الشوط الواحد في مباراة كرة القدم؟", options:["30 دقيقة","40 دقيقة","45 دقيقة","50 دقيقة"], a:2},
+      {q:"ما اسم البطاقة التي تعني طرد اللاعب من المباراة؟", options:["البطاقة الصفراء","البطاقة الحمراء","البطاقة الخضراء","البطاقة الزرقاء"], a:1},
+      {q:"من هو اللاعب الملقب بـ 'الدون'؟", options:["ليونيل ميسي","كريستيانو رونالدو","نيمار","مبابي"], a:1},
+    ],
+    medium: [
+      {q:"أي منتخب فاز بكأس العالم لكرة القدم 2018؟", options:["ألمانيا","فرنسا","كرواتيا","البرازيل"], a:1},
+      {q:"كم مرة فاز المنتخب البرازيلي بكأس العالم؟", options:["أربع مرات","خمس مرات","ست مرات","ثلاث مرات"], a:1},
+      {q:"من هو الهداف التاريخي لكأس العالم؟", options:["بيليه","ميروسلاف كلوزه","رونالدو نازاريو","مارادونا"], a:1},
+      {q:"ما اسم النادي الذي يلعب له ليونيل ميسي حالياً؟", options:["برشلونة","إنتر ميامي","باريس سان جيرمان","الهلال"], a:1},
+      {q:"أي دولة عربية استضافت كأس العالم لأول مرة؟", options:["السعودية","المغرب","قطر","الإمارات"], a:2},
+    ],
+    hard: [
+      {q:"من هو أول لاعب عربي يفوز بجائزة أفضل لاعب في الدوري الإنجليزي الممتاز؟", options:["محمد صلاح","رياض محرز","سردار أزمون","حكيم زياش"], a:1},
+      {q:"في أي عام أقيمت أول نسخة من كأس العالم لكرة القدم؟", options:["1926","1930","1934","1938"], a:1},
+      {q:"ما اسم أول نادٍ عربي يصل إلى نهائي دوري أبطال آسيا للأندية أكثر من مرة؟", options:["الهلال السعودي","الأهلي السعودي","الوداد المغربي","الترجي التونسي"], a:0},
+      {q:"من هو المدرب الذي قاد منتخب المغرب للوصول إلى نصف نهائي كأس العالم 2022؟", options:["وليد الركراكي","فوزي البنزرتي","هيرفي رينارد","رشيد الطالبي"], a:0},
+      {q:"كم عدد الألقاب التي حققها النادي الأهلي المصري في دوري أبطال أفريقيا حتى 2024؟", options:["8 ألقاب","10 ألقاب","11 لقباً","9 ألقاب"], a:2},
+    ],
+  },
+};
+
+const CATEGORIES = [
+  {key:"general", name:"عامة", icon:"🧠"},
+  {key:"history", name:"تاريخ", icon:"🏛️"},
+  {key:"geography", name:"جغرافيا", icon:"🗺️"},
+  {key:"religion", name:"دينية إسلامي", icon:"🕌"},
+  {key:"football", name:"رياضة كرة قدم", icon:"⚽"},
+];
+
+const DIFFICULTIES = [
+  {key:"easy", name:"سهل", meta:"إحماء بسيط", cls:"easy", seconds:20},
+  {key:"medium", name:"متوسط", meta:"يحتاج تركيز", cls:"medium", seconds:15},
+  {key:"hard", name:"صعب", meta:"للمحترفين فقط", cls:"hard", seconds:12},
+];
+
+/* ---------------- State ---------------- */
+let state = {
+  screen: "home", // home | difficulty | quiz | result
+  category: null,
+  difficulty: null,
+  qIndex: 0,
+  score: 0,
+  questions: [],
+  answered: false,
+  timerId: null,
+  timeLeft: 0,
+};
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+async function getBest(catKey, diffKey){
+  try{
+    const res = await window.storage.get(`best:${catKey}:${diffKey}`, false);
+    return res ? parseInt(res.value) : 0;
+  }catch(e){ return 0; }
+}
+async function setBest(catKey, diffKey, score){
+  try{ await window.storage.set(`best:${catKey}:${diffKey}`, String(score), false); }catch(e){}
+}
+
+/* ---------------- Rendering ---------------- */
+const app = document.getElementById("app");
+
+function render(){
+  clearTimer();
+  if(state.screen === "home") renderHome();
+  else if(state.screen === "difficulty") renderDifficulty();
+  else if(state.screen === "quiz") renderQuiz();
+  else if(state.screen === "result") renderResult();
+}
+
+function renderHome(){
+  app.innerHTML = `
+    <div class="screen card">
+      <div class="motif tl"></div><div class="motif br"></div>
+      <h1 class="title">سؤال وجواب</h1>
+      <p class="subtitle">اختر القسم الذي تريد تحدّي نفسك فيه</p>
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+  `;
+  const grid = document.getElementById("catGrid");
+  CATEGORIES.forEach(cat=>{
+    const btn = document.createElement("button");
+    btn.className = "cat-btn";
+    btn.innerHTML = `<span class="icon">${cat.icon}</span><span class="name">${cat.name}</span>`;
+    btn.onclick = ()=>{ state.category = cat.key; state.screen = "difficulty"; render(); };
+    grid.appendChild(btn);
+  });
+}
+
+function renderDifficulty(){
+  const cat = CATEGORIES.find(c=>c.key===state.category);
+  app.innerHTML = `
+    <div class="screen card">
+      <div class="motif tl"></div><div class="motif br"></div>
+      <button class="back-link" id="backBtn">→ رجوع</button>
+      <h1 class="title" style="font-size:1.5rem;">${cat.icon} ${cat.name}</h1>
+      <p class="subtitle">اختر مستوى الصعوبة</p>
+      <div class="diff-list" id="diffList"></div>
+    </div>
+  `;
+  document.getElementById("backBtn").onclick = ()=>{ state.screen="home"; render(); };
+  const list = document.getElementById("diffList");
+  DIFFICULTIES.forEach(d=>{
+    const btn = document.createElement("button");
+    btn.className = `diff-btn ${d.cls}`;
+    btn.innerHTML = `<span style="display:flex;align-items:center;gap:10px;"><span class="dot"></span>${d.name}</span><span class="meta">${d.meta}</span>`;
+    btn.onclick = ()=> startQuiz(cat.key, d.key);
+    list.appendChild(btn);
+  });
+}
+
+function startQuiz(catKey, diffKey){
+  const bank = QUESTIONS[catKey][diffKey];
+  state.category = catKey;
+  state.difficulty = diffKey;
+  state.questions = shuffle(bank);
+  state.qIndex = 0;
+  state.score = 0;
+  state.answered = false;
+  state.screen = "quiz";
+  render();
+}
+
+function renderQuiz(){
+  const diffInfo = DIFFICULTIES.find(d=>d.key===state.difficulty);
+  const cat = CATEGORIES.find(c=>c.key===state.category);
+  const total = state.questions.length;
+  const q = state.questions[state.qIndex];
+  const progressPct = Math.round((state.qIndex/total)*100);
+
+  app.innerHTML = `
+    <div class="screen card">
+      <div class="motif tl"></div><div class="motif br"></div>
+      <div class="quiz-top">
+        <span>${cat.icon} ${cat.name} · ${diffInfo.name}</span>
+        <span class="score-pill">النقاط: ${state.score}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${progressPct}%"></div></div>
+      <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+      <div class="q-text">${state.qIndex+1}. ${q.q}</div>
+      <div class="options" id="options"></div>
+      <div class="next-hint" id="nextHint"></div>
+    </div>
+  `;
+
+  const optsEl = document.getElementById("options");
+  const shuffledOrder = q.options.map((text,i)=>({text,i}));
+  q._display = shuffledOrder; // keep original indices, no reshuffle needed per render
+
+  shuffledOrder.forEach(opt=>{
+    const btn = document.createElement("button");
+    btn.className = "opt-btn";
+    btn.textContent = opt.text;
+    btn.onclick = ()=> handleAnswer(opt.i, btn);
+    optsEl.appendChild(btn);
+  });
+
+  state.answered = false;
+  startTimer(diffInfo.seconds);
+}
+
+function startTimer(seconds){
+  state.timeLeft = seconds;
+  const fill = document.getElementById("timerFill");
+  fill.style.transition = "none";
+  fill.style.width = "100%";
+  requestAnimationFrame(()=>{
+    fill.style.transition = `width ${seconds}s linear`;
+    fill.style.width = "0%";
+  });
+  state.timerId = setTimeout(()=>{
+    if(!state.answered) handleAnswer(-1, null);
+  }, seconds*1000);
+}
+
+function clearTimer(){
+  if(state.timerId){ clearTimeout(state.timerId); state.timerId = null; }
+}
+
+function handleAnswer(chosenIndex, btnEl){
+  if(state.answered) return;
+  state.answered = true;
+  clearTimer();
+  const q = state.questions[state.qIndex];
+  const buttons = document.querySelectorAll(".opt-btn");
+  buttons.forEach(b=> b.disabled = true);
+
+  const displayOrder = q._display;
+  displayOrder.forEach((opt, idx)=>{
+    const btn = buttons[idx];
+    if(opt.i === q.a) btn.classList.add("correct");
+    else if(opt.i === chosenIndex) btn.classList.add("wrong");
+  });
+
+  const correct = chosenIndex === q.a;
+  if(correct) state.score += 1;
+
+  const hint = document.getElementById("nextHint");
+  hint.textContent = correct ? "إجابة صحيحة! 🎉" : (chosenIndex===-1 ? "انتهى الوقت!" : "إجابة خاطئة");
+
+  setTimeout(()=>{
+    if(state.qIndex < state.questions.length - 1){
+      state.qIndex += 1;
+      render();
+    } else {
+      finishQuiz();
+    }
+  }, 1200);
+}
+
+async function finishQuiz(){
+  const best = await getBest(state.category, state.difficulty);
+  if(state.score > best) await setBest(state.category, state.difficulty, state.score);
+  state.screen = "result";
+  render();
+}
+
+async function renderResult(){
+  const total = state.questions.length;
+  const pct = Math.round((state.score/total)*100);
+  const cat = CATEGORIES.find(c=>c.key===state.category);
+  const diffInfo = DIFFICULTIES.find(d=>d.key===state.difficulty);
+  const best = await getBest(state.category, state.difficulty);
+
+  let emoji = "🙂";
+  let label = "محاولة جيدة";
+  if(pct === 100){ emoji="🏆"; label="ممتاز! إجابات كاملة"; }
+  else if(pct >= 70){ emoji="🌟"; label="أداء رائع"; }
+  else if(pct >= 40){ emoji="👍"; label="لا بأس، حاول مجدداً"; }
+  else { emoji="💪"; label="لا تستسلم، حاول مرة أخرى"; }
+
+  app.innerHTML = `
+    <div class="screen card">
+      <div class="motif tl"></div><div class="motif br"></div>
+      <div class="result-emoji">${emoji}</div>
+      <div class="result-score">${state.score} / ${total}</div>
+      <div class="result-label">${label} — ${cat.icon} ${cat.name} · ${diffInfo.name}</div>
+      <div class="result-best">أفضل نتيجة لهذا القسم: ${best} / ${total}</div>
+      <div class="rule"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="retryBtn">إعادة المحاولة</button>
+        <button class="btn btn-secondary" id="homeBtn">الأقسام</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("retryBtn").onclick = ()=> startQuiz(state.category, state.difficulty);
+  document.getElementById("homeBtn").onclick = ()=>{ state.screen="home"; render(); };
+}
+
+render();
+</script>
+</body>
+</html>
